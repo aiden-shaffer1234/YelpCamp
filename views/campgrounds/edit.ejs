@@ -1,16 +1,40 @@
 <% layout('layouts/boilerplate') %>
-    <h1>Add your Campground</h1>
-    <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post">
-        <section>
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="campground[title]" value="<%=campground.title%>">
-        </section>
-
-        <section>
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="campground[location]" value="<%=campground.location%>" required>
-        </section>
-
-        <button type="submit">Update Campground</button>
-    </form>
-    <a href="/campgrounds/<%=campground._id%>">Cancel</a>
+    <div class="row">
+        <h1 class="text-center">Add your Campground</h1>
+        <div class="col-6 offset-3">
+            <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post">
+                <section class="mb-3">
+                    <label class="form-label" for="title">Title:</label>
+                    <input class="form-control" type="text" id="title" name="campground[title]"
+                        value="<%=campground.title%>">
+                </section>
+                <section class="mb-3">
+                    <label class="form-label" for="location">Location:</label>
+                    <input class="form-control" type="text" id="location" name="campground[location]"
+                        value="<%=campground.location%>" required>
+                </section>
+                <section class="mb-3">
+                    <label class="form-label" for="price">Price:</label>
+                    <section class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input class="form-control" type="number" id="price" name="campground[price]"
+                            value="<%=campground.price%>" required>
+                    </section>
+                </section>
+                <section class="mb-3">
+                    <label class="form-label" for="image">Image Url:</label>
+                    <input class="form-control" type="text" id="image" name="campground[image]"
+                        value="<%=campground.image%>" required>
+                </section>
+                <section class="mb-3">
+                    <label class="form-label" for="description">Description:</label>
+                    <input class="form-control" type="text" id="description" name="campground[description]"
+                        value="<%=campground.description%>" required>
+                </section>
+                <section class="mb-3">
+                    <button class="btn btn-info text-white">Update Campground</button>
+                </section>
+            </form>
+            <a href="/campgrounds/<%=campground._id%>">Cancel</a>
+        </div>
+    </div>
