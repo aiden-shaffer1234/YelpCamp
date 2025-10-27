@@ -6,6 +6,8 @@ const PORT = 5500;
 const CampGround = require('./models/campground');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
+const catchAsync = require('./utils/catchAsync');
+const ExpressError = require('./utils/ExpressError')
 
 app.engine('ejs', ejsMate);
 
@@ -30,44 +32,53 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/campgrounds', async (req, res) => {
+app.get('/campgrounds', catchAsync(async (req, res) => {
     const campgrounds = await CampGround.find({})
     res.render('campgrounds/index', { campgrounds } )
-})
+}));
 
-app.get('/campgrounds/new', async (req, res) => {
+app.get('/campgrounds/new', catchAsync(async (req, res) => {
     res.render('campgrounds/new')
-});
+}));
 
-app.get('/campgrounds/:id', async (req, res) => {
+app.get('/campgrounds/:id', catchAsync(async (req, res) => {
     const id = req.params.id;
     const campground = await CampGround.findById(id)
     res.render('campgrounds/show', { campground } )
-})
+}));
 
-app.post('/campgrounds', async (req, res) => {
+app.post('/campgrounds', catchAsync(async (req, res) => {
     const newCampground = new CampGround(  req.body.campground );
     await newCampground.save();
     res.redirect(`/campgrounds/${newCampground._id}`);
-});
+}));
 
-app.put('/campgrounds/:id', async (req, res) => {
+app.put('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params
     console.log(id);
     const campground = await CampGround.findByIdAndUpdate(id, {...req.body.campground});
     res.redirect(`/campgrounds/${campground._id}`);
-});
+}));
 
-app.get('/campgrounds/:id/edit', async (req, res) => {
+app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
     const campground = await CampGround.findById(req.params.id);
     res.render('campgrounds/edit', { campground });
-});
+}));
 
-app.delete('/campgrounds/:id', async (req, res) => {
+app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
     await CampGround.findByIdAndDelete(id);
     res.redirect('/campgrounds');
-});
+}));
+
+app.all(/(.*)/, (req, res, next) => {
+    return next(new ExpressError('Page Not Found', 404));
+})
+app.use((err, req, res, next) => {
+    const {statusCode = 500, message = "Something went wrong"} = err;
+    res.statusCode(statusCode).send(message);
+    res.send("error")
+})
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
