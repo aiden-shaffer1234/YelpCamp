@@ -72,12 +72,12 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
 }));
 
 app.all(/(.*)/, (req, res, next) => {
-    return next(new ExpressError('Page Not Found', 404));
+    next(new ExpressError('Page Not Found', 404));
 })
 app.use((err, req, res, next) => {
-    const {statusCode = 500, message = "Something went wrong"} = err;
-    res.statusCode(statusCode).send(message);
-    res.send("error")
+    const {statusCode = 500} = err;
+    if (!err.message) err.message = 'Oh no, something went wrong!'
+    res.status(statusCode).render('error', { err });
 })
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
