@@ -9,6 +9,7 @@ const ejsMate = require('ejs-mate');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError')
 const Joi = require('joi');
+const { campgroundSchema } = require('./schemas.js')
 
 app.engine('ejs', ejsMate);
 
@@ -29,24 +30,11 @@ db.once('open', () => {
 });
 
 function validateCampground(req, res, next) {
-    if (req.method === 'get' || req.method === 'delete'){
-        return next();
-    }
-
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({
-            title: Joi.string().required(),
-            location: Joi.string().required(),
-            price: Joi.number().min(0).required(),
-            description: Joi.string().required(),
-        }).required()
-    });
-
     const { error } = campgroundSchema.validate(req.body);
     if (error) {
         const message = error.details.map(detail => detail.message);
         throw new ExpressError(message, 404);
-    }else {
+    } else {
         next();
     }
 }
