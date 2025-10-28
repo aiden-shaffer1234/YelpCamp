@@ -8,6 +8,7 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError')
+const Joi = require('joi');
 
 app.engine('ejs', ejsMate);
 
@@ -55,7 +56,23 @@ app.post('/campgrounds', catchAsync(async (req, res) => {
 
 app.put('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params
-    console.log(id);
+    
+    const campgroundSchema = Joi.object({
+        campground: Joi.object({
+            title: Joi.string().required(),
+            location: Joi.string().required(),
+            price: Joi.number().required().min(0),
+            description: Joi.string().required(),
+            image: Joi.string().required()
+        }).required()
+    });
+
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const message = error.details.map(detail => detail.message).join(',');
+        new ExpressError(message, 404);
+    }
+
     const campground = await CampGround.findByIdAndUpdate(id, {...req.body.campground});
     res.redirect(`/campgrounds/${campground._id}`);
 }));
@@ -73,6 +90,29 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
 
 app.all(/(.*)/, (req, res, next) => {
     next(new ExpressError('Page Not Found', 404));
+})
+
+app.use((req, res, next) => {
+    console.log("entering joi middleware");
+    if (req.method === 'get' || req.method === 'delete'){
+        return next();
+    }
+    console.log("entering joi middleware");
+
+    const campgroundSchema = Joi.object({
+        campground: Joi.object({
+            title: Joi.string().required(),
+            location: Joi.string().required(),
+            price: Joi.number().min(0).required(),
+            description: Joi.string().required(),
+        }).required()
+    });
+
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const message = error.details.map(detail => detail.message);
+        next(new ExpressError(message, 404));
+    }
 })
 app.use((err, req, res, next) => {
     const {statusCode = 500} = err;
