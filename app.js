@@ -28,6 +28,28 @@ db.once('open', () => {
     console.log('Database connected');
 });
 
+function validateCampground(req, res, next) {
+    if (req.method === 'get' || req.method === 'delete'){
+        return next();
+    }
+
+    const campgroundSchema = Joi.object({
+        campground: Joi.object({
+            title: Joi.string().required(),
+            location: Joi.string().required(),
+            price: Joi.number().min(0).required(),
+            description: Joi.string().required(),
+        }).required()
+    });
+
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const message = error.details.map(detail => detail.message);
+        throw new ExpressError(message, 404);
+    }else {
+        next();
+    }
+}
 
 app.get('/', (req, res) => {
     res.render('home');
@@ -48,31 +70,14 @@ app.get('/campgrounds/:id', catchAsync(async (req, res) => {
     res.render('campgrounds/show', { campground } )
 }));
 
-app.post('/campgrounds', catchAsync(async (req, res) => {
+app.post('/campgrounds', validateCampground, catchAsync(async (req, res) => {
     const newCampground = new CampGround(  req.body.campground );
     await newCampground.save();
     res.redirect(`/campgrounds/${newCampground._id}`);
 }));
 
-app.put('/campgrounds/:id', catchAsync(async (req, res) => {
+app.put('/campgrounds/:id', validateCampground, catchAsync(async (req, res) => {
     const { id } = req.params
-    
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({
-            title: Joi.string().required(),
-            location: Joi.string().required(),
-            price: Joi.number().required().min(0),
-            description: Joi.string().required(),
-            image: Joi.string().required()
-        }).required()
-    });
-
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        const message = error.details.map(detail => detail.message).join(',');
-        new ExpressError(message, 404);
-    }
-
     const campground = await CampGround.findByIdAndUpdate(id, {...req.body.campground});
     res.redirect(`/campgrounds/${campground._id}`);
 }));
@@ -92,28 +97,6 @@ app.all(/(.*)/, (req, res, next) => {
     next(new ExpressError('Page Not Found', 404));
 })
 
-app.use((req, res, next) => {
-    console.log("entering joi middleware");
-    if (req.method === 'get' || req.method === 'delete'){
-        return next();
-    }
-    console.log("entering joi middleware");
-
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({
-            title: Joi.string().required(),
-            location: Joi.string().required(),
-            price: Joi.number().min(0).required(),
-            description: Joi.string().required(),
-        }).required()
-    });
-
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        const message = error.details.map(detail => detail.message);
-        next(new ExpressError(message, 404));
-    }
-})
 app.use((err, req, res, next) => {
     const {statusCode = 500} = err;
     if (!err.message) err.message = 'Oh no, something went wrong!'
