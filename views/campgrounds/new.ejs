@@ -2,32 +2,32 @@
     <div class="row">
         <h1 class="text-center">Add your Campground</h1>
         <div class="col-6 offset-3">
-            <form action="/campgrounds" method="post">
-                <section class="mb-3">
+            <form action="/campgrounds" method="post" class="validated-form" novalidate>
+                <div class="mb-3">
                     <label for="title">Title:</label>
                     <input class="form-control" type="text" id="title" name="campground[title]" required>
-                </section>
-                <section class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label for="location">Location:</label>
                     <input class="form-control" type="text" id="location" name="campground[location]" required>
-                </section>
-                <section class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label for="price">Price:</label>
-                    <section class="input-group">
+                    <div class="input-group">
                         <span class="input-group-text" id="basic-addon1">$</span>
                         <input class="form-control" type="number" id="price" name="campground[price]" placeholder="0.00"
                             required>
-                    </section>
-                </section>
-                <section class="mb-3">
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label for="image">Image Url:</label>
                     <input class="form-control" type="text" id="image" name="campground[image]" required>
-                </section>
-                <section class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label for="description">Description:</label><br>
                     <textarea class="form-control" id="description" name="campground[description]" rows="4" cols="50"
                         required></textarea>
-                </section>
+                </div>
 
                 <button class="btn btn-success mb-3" type="submit">Add Campground</button>
             </form>
